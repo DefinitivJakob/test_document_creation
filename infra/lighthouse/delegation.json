@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_comment": "Azure Lighthouse: delegiert EINE Resource Group read-only an den unit-ix-Tenant. Deploy auf Subscription-Ebene (az deployment sub create). Definition liegt auf Subscription, Assignment wird per nested Deployment auf die RG begrenzt (least privilege)."
+  },
+  "parameters": {
+    "mspOfferName": {
+      "type": "string",
+      "metadata": { "description": "Anzeigename der Delegation (erscheint beim Kunden unter 'Service providers')." }
+    },
+    "mspOfferDescription": {
+      "type": "string",
+      "defaultValue": "Read-only Monitoring-Zugriff (Application Insights) fuer unit-ix."
+    },
+    "managedByTenantId": {
+      "type": "string",
+      "metadata": { "description": "Tenant-ID des MANAGING-Tenants = unit-ix." }
+    },
+    "rgName": {
+      "type": "string",
+      "metadata": { "description": "Name der Resource Group, die delegiert wird (z.B. rg-mondi-doc)." }
+    },
+    "authorizations": {
+      "type": "array",
+      "metadata": { "description": "Array aus { principalId, principalIdDisplayName, roleDefinitionId } – principalId liegt im unit-ix-Tenant." }
+    }
+  },
+  "variables": {
+    "mspRegistrationName": "[guid(parameters('mspOfferName'))]",
+    "mspAssignmentName": "[guid(parameters('mspOfferName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ManagedServices/registrationDefinitions",
+      "apiVersion": "2019-06-01",
+      "name": "[variables('mspRegistrationName')]",
+      "properties": {
+        "registrationDefinitionName": "[parameters('mspOfferName')]",
+        "description": "[parameters('mspOfferDescription')]",
+        "managedByTenantId": "[parameters('managedByTenantId')]",
+        "authorizations": "[parameters('authorizations')]"
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "rgAssignment",
+      "resourceGroup": "[parameters('rgName')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {},
+          "resources": [
+            {
+              "type": "Microsoft.ManagedServices/registrationAssignments",
+              "apiVersion": "2019-06-01",
+              "name": "[variables('mspAssignmentName')]",
+              "properties": {
+                "registrationDefinitionId": "[resourceId('Microsoft.ManagedServices/registrationDefinitions/', variables('mspRegistrationName'))]"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "mspOfferName": {
+      "type": "string",
+      "value": "[concat('Managed by ', parameters('mspOfferName'))]"
+    },
+    "authorizations": {
+      "type": "array",
+      "value": "[parameters('authorizations')]"
+    }
+  }
+}

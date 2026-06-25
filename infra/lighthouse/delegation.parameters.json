@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "mspOfferName": {
+      "value": "unit-ix Document Creation Monitoring"
+    },
+    "mspOfferDescription": {
+      "value": "Read-only Monitoring-Zugriff (Application Insights) fuer unit-ix."
+    },
+    "managedByTenantId": {
+      "value": "<UNIT-IX-TENANT-ID>"
+    },
+    "rgName": {
+      "value": "rg-mondi-doc"
+    },
+    "authorizations": {
+      "value": [
+        {
+          "principalId": "<UNIT-IX-GROUP-OR-USER-OBJECT-ID>",
+          "principalIdDisplayName": "unit-ix Monitoring (read-only)",
+          "roleDefinitionId": "43d0d8ad-25c7-4714-9337-8ba259a9fe05"
+        }
+      ]
+    }
+  }
+}

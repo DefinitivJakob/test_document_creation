@@ -27,6 +27,7 @@ Lokaler Function-Host: `npm start` (führt clean + build aus und startet `func s
 
 - [docs/architecture.md](docs/architecture.md) — Wie der Renderer aufgebaut ist, Wrapper-Pipeline, Library-Patch
 - [docs/azure-setup.md](docs/azure-setup.md) — Function App in Azure aufsetzen + Deployment (GitHub OIDC), Schritt für Schritt
+- [docs/lighthouse-monitoring.md](docs/lighthouse-monitoring.md) — Application Insights des Kunden read-only im eigenen Portal sehen (Azure Lighthouse)
 - [docs/power-automate-integration.md](docs/power-automate-integration.md) — Power-Automate-Flow gegen die Function
 - [docs/template-authoring.md](docs/template-authoring.md) — Best Practices fürs Erstellen von Word-Templates
 - [docs/BACKLOG.md](docs/BACKLOG.md) — Offene Stabilitäts-Tests und Roadmap
