@@ -1,0 +1,35 @@
+{
+  "name": "mondi-document-creation-tool",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mondi-specific Azure Function for generating Word documents from templates via Power Automate (runs in the Mondi tenant).",
+  "type": "module",
+  "main": "dist/functions/*.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc && tsx scripts/copyAssets.ts",
+    "clean": "rm -rf dist",
+    "start": "npm run clean && npm run build && func start",
+    "test": "tsx scripts/runTest.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.scripts.json",
+    "gen-payload": "tsx scripts/genPayload.ts",
+    "postinstall": "patch-package"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.14.0",
+    "@fontsource/inter": "^5.2.8",
+    "@react-pdf/renderer": "^4.5.1",
+    "docx-templates": "^4.13.0",
+    "jszip": "^3.10.1",
+    "patch-package": "^8.0.1",
+    "react": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.15",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

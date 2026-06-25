@@ -1,0 +1,20 @@
+.git*
+.vscode
+local.settings.json
+node_modules/.cache
+
+# Source — only compiled dist/ is shipped to the Function App
+src/
+scripts/
+patches/
+
+# Dev-only utilities (never compiled or deployed)
+scripts/
+test-cases/
+
+# Docs and READMEs
+docs/
+*.md
+BACKLOG.md
+README.md
+tsconfig.scripts.json

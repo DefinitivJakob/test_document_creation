@@ -1,0 +1,26 @@
+diff --git a/node_modules/docx-templates/lib/processTemplate.js b/node_modules/docx-templates/lib/processTemplate.js
+index 7066cb1..9abf9b3 100644
+--- a/node_modules/docx-templates/lib/processTemplate.js
++++ b/node_modules/docx-templates/lib/processTemplate.js
+@@ -293,10 +293,18 @@ function walkTemplate(data, template, ctx, processor) {
+                             fRemoveNode =
+                                 buffers.text === '' && buffers.cmds !== '' && !buffers.fInsertedText;
+                             // If the last generated output node is a table row, and it is set to be deleted,
+-                            // don't delete if it has exactly one nested row (i.e. within nested table)
++                            // don't delete if any cell (in the OUTPUT) contains a nested table.
++                            // Issue #82 fix: the original check filtered nodeIn._children for w:tr,
++                            // but a w:tr's direct children are w:tc cells (never w:tr), so the
++                            // protection never triggered. Using nodeOut and checking for w:tbl
++                            // inside cells is the actually intended behavior.
+                             if (tag === 'w:tr' && fRemoveNode) {
+-                                fRemoveNode =
+-                                    nodeIn._children.filter(function (child) { return !child._fTextNode && child._tag === 'w:tr'; }).length !== 1;
++                                fRemoveNode = !nodeOut._children.some(function (cell) {
++                                    return !cell._fTextNode && cell._tag === 'w:tc' &&
++                                        cell._children.some(function (child) {
++                                            return !child._fTextNode && child._tag === 'w:tbl';
++                                        });
++                                });
+                             }
+                             // If the last generated output node is a table column, and it is set to be deleted,
+                             // don't delete if it has a table as a child

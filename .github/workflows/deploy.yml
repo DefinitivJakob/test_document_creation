@@ -1,0 +1,57 @@
+name: Deploy Azure Function App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  # Vorläufig — finaler Function-App-Name wird in der Azure-Phase festgelegt
+  # (muss exakt dem Namen der Function App in der Mondi-Subscription entsprechen).
+  AZURE_FUNCTIONAPP_NAME: mondi-document-creation-tool
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '22.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        # Uses ci so package-lock.json is the source of truth.
+        # postinstall (patch-package) applies the docx-templates patch.
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build (tsc → dist/)
+        run: npm run build
+
+      - name: Prune devDependencies
+        # Slims node_modules to production deps only; patches stay applied
+        # because patch-package mutated files under node_modules/docx-templates.
+        run: npm prune --production
+
+      - name: Deploy to Azure Function App
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+          remote-build: false
+          sku: 'flexconsumption'
