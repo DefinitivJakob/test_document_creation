@@ -33,9 +33,12 @@ Im **unit-ix**-Azure-Portal:
    - die **Object ID** der Gruppe kopieren → kommt in `authorizations[].principalId`
    - *(Für einen schnellen Test reicht auch die Object ID deines unit-ix-Users:
      Entra ID → Users → dein User → Object ID.)*
-3. **Rolle:** bleibt **Monitoring Reader** (`43d0d8ad-25c7-4714-9337-8ba259a9fe05`).
-   Reicht für Application Insights + Log Analytics lesen. *(Mehr Kontext per `Reader`
-   `acdd72a7-3385-48ef-bd42-f606fba81ae7`, falls auch andere Ressourcen sichtbar sein sollen.)*
+3. **Rollen:** **Reader** (`acdd72a7-3385-48ef-bd42-f606fba81ae7`) **+** **Monitoring Reader**
+   (`43d0d8ad-25c7-4714-9337-8ba259a9fe05`).
+   ⚠️ **Reader ist Pflicht**, sonst erscheint die Delegation **nicht** unter „My customers"
+   im Provider-Portal — Microsoft verlangt für diese Ansicht eine Rolle, die Reader-Zugriff
+   *enthält*. Monitoring Reader allein reicht **nicht** (ist kein Superset von Reader). Beide
+   sind read-only und nur auf die eine RG begrenzt.
 
 Diese drei Werte in [delegation.parameters.json](../infra/lighthouse/delegation.parameters.json)
 eintragen (`managedByTenantId`, `principalId`, ggf. `rgName`).
@@ -101,3 +104,10 @@ Gegenprobe beim Kunden: Subscription → **Service providers** (bzw. **Service p
   bleiben im Kunden-Tenant gespeichert. Kein Export zu uns.
 - **Voraussetzung App Insights:** workspace-based (so beim Setup angelegt) — Monitoring
   Reader auf der RG deckt App Insights + Log Analytics ab.
+
+### „My customers" bleibt leer trotz korrekter Gruppe?
+- **Häufigste Ursache:** der delegierten Gruppe fehlt die **Reader**-Rolle. „My customers"
+  zeigt nur Delegationen mit Reader-Zugriff. Reader ergänzen und Delegation neu deployen.
+- Danach **Token erneuern** (ab-/anmelden oder Browser-Refresh), ~bis 15 Min Propagation.
+- **Subscription-Filter** prüfen: Portal oben → Filter → die delegierte Subscription darf
+  nicht ausgeschlossen sein.

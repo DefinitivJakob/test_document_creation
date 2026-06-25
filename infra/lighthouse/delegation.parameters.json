@@ -9,7 +9,7 @@
       "value": "Read-only Monitoring-Zugriff (Application Insights) fuer unit-ix."
     },
     "managedByTenantId": {
-      "value": "<UNIT-IX-TENANT-ID>"
+      "value": "0bb7071a-01ca-4f14-9fcf-1b77cc51506d"
     },
     "rgName": {
       "value": "rg-mondi-doc"
@@ -17,8 +17,13 @@
     "authorizations": {
       "value": [
         {
-          "principalId": "<UNIT-IX-GROUP-OR-USER-OBJECT-ID>",
-          "principalIdDisplayName": "unit-ix Monitoring (read-only)",
+          "principalId": "aa2acb3c-366b-4a83-8738-10e9692ed836",
+          "principalIdDisplayName": "unit-ix Monitoring (read-only) - Reader",
+          "roleDefinitionId": "acdd72a7-3385-48ef-bd42-f606fba81ae7"
+        },
+        {
+          "principalId": "aa2acb3c-366b-4a83-8738-10e9692ed836",
+          "principalIdDisplayName": "unit-ix Monitoring (read-only) - Monitoring Reader",
           "roleDefinitionId": "43d0d8ad-25c7-4714-9337-8ba259a9fe05"
         }
       ]
