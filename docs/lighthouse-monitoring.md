@@ -40,21 +40,13 @@ Ausgeführt von einer Person mit **Owner** / **User Access Administrator**. Das 
 erfolgt auf **Subscription-Ebene**; die Beschränkung auf die eine Resource Group steckt
 bereits in der Vorlage.
 
-**Variante A — Azure Cloud Shell (empfohlen):**
-Im Azure-Portal oben das **Cloud-Shell**-Icon (`>_`) → **Bash** → beide Dateien hochladen
-(Upload-Button), dann:
-```bash
-az deployment sub create \
-  --name lighthouse-monitoring \
-  --location germanywestcentral \
-  --template-file delegation.json \
-  --parameters @delegation.parameters.json
-```
+Im Azure-Portal:
 
-**Variante B — Portal „Deploy a custom template":**
-Portal → Suche **„Deploy a custom template"** → **Build your own template in the editor** →
-Inhalt von `delegation.json` einfügen → **Save** → die Parameter ausfüllen bzw. übernehmen →
-**Review + create**.
+1. Suche **„Deploy a custom template"** → **Build your own template in the editor**.
+2. Inhalt von `delegation.json` einfügen → **Save**.
+3. **Edit parameters** → Inhalt von `delegation.parameters.json` einfügen (oder die Felder
+   manuell ausfüllen) → **Save**.
+4. **Review + create** → **Create**.
 
 ---
 
