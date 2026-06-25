@@ -8,8 +8,8 @@ Tenant-Wechsel, ohne Gast-Login, ohne dass der Kunde irgendetwas zu uns rausschi
 
 **Azure Lighthouse** (Delegated Resource Management): Der Kunde („managed tenant")
 delegiert genau eine Resource Group an unseren unit-ix-Tenant („managing tenant"). Wir
-bekommen darauf eine RBAC-Rolle (**Monitoring Reader** = read-only). Danach erscheinen die
-delegierten Ressourcen in unserem Portal unter **Azure Lighthouse → My customers** und
+bekommen darauf zwei read-only-Rollen (**Reader** + **Monitoring Reader**). Danach erscheinen
+die delegierten Ressourcen in unserem Portal unter **Azure Lighthouse → My customers** und
 Application Insights/Log Analytics sind cross-tenant abfragbar.
 
 Begriffe:
@@ -74,15 +74,36 @@ ausfüllen → **Review + create**.
 
 ## Schritt 3 — Zugriff in unserem Portal prüfen (managing)
 
-Im **unit-ix**-Portal:
-1. Suche **„Azure Lighthouse"** → **My customers** → die delegierte Subscription/RG erscheint
-   (ggf. wenige Minuten Verzug).
-2. Application Insights ansehen: oben im **Directory + Subscription**-Filter die delegierte
-   Subscription mit anhaken → dann ganz normal die App-Insights-Ressource öffnen
-   (**Live Metrics**, **Logs/KQL**, **Failures**). Kein Tenant-Wechsel nötig.
+Im **unit-ix**-Portal, angemeldet als **Mitglied der delegierten Gruppe**:
 
-Gegenprobe beim Kunden: Subscription → **Service providers** (bzw. **Service provider offers**)
-→ die Delegation ist gelistet und jederzeit vom Kunden kündbar.
+1. **Richtige Directory:** oben rechts aufs Profil → **Switch directory** → **UNIT IX GmbH**.
+2. **Subscription-Filter setzen** — ⚠️ der häufigste Grund, warum trotz funktionierender
+   Delegation „nichts da" ist: delegierte Subscriptions sind im Portal standardmäßig oft
+   **ausgefiltert**. Zahnrad **Settings → Directories + subscriptions** → die delegierte
+   Subscription (z. B. „Azure for Students") **anhaken** (oder „Select all").
+3. **Token aktuell?** Falls weiterhin leer: komplett **ab- und neu anmelden** (oder
+   InPrivate-Fenster). Browser- und CLI-Token sind getrennt — das Browser-Token muss die
+   Delegation/Gruppenmitgliedschaft enthalten. Propagation ~bis 15 Min.
+4. **Ergebnis:** **Azure Lighthouse → My customers** zeigt die Subscription; bzw. globale
+   Suche nach der App-Insights-Ressource (`mondi-test`) → **Live Metrics / Logs / Failures**.
+
+Gegenprobe beim Kunden: Subscription → **Service providers → Service provider offers** → die
+Delegation ist gelistet (Tab **Role assignments**: Reader + Monitoring Reader) und jederzeit
+vom Kunden kündbar.
+
+### Optional: per CLI verifizieren (eindeutiger Beweis)
+
+Als unit-ix-User eingeloggt (`az login --tenant <unit-ix-tenant-id>`):
+```bash
+az account set --subscription <kunden-sub-id>
+az group show -n rg-mondi-doc -o table                       # Reader -> liest die RG
+az monitor app-insights query --app mondi-test -g rg-mondi-doc \
+  --analytics-query "requests | summarize count() by name, tostring(resultCode)"
+# Negativ-Test (read-only): MUSS mit AuthorizationFailed scheitern
+az tag create --resource-id "/subscriptions/<kunden-sub-id>/resourceGroups/rg-mondi-doc" --tags x=1
+```
+Erscheint die Subscription bei `az account list --refresh` mit `homeTenantId` = Kunden-Tenant,
+aber `tenantId` = unit-ix, läuft Lighthouse korrekt.
 
 ---
 
@@ -92,7 +113,7 @@ Gegenprobe beim Kunden: Subscription → **Service providers** (bzw. **Service p
 |---|---|
 | Du deployst die Delegation selbst | Mondi-Admin deployt sie (Template + Parameter liefern wir) |
 | principalId = ggf. dein unit-ix-User | principalId = Security-Gruppe `unit-ix Monitoring` |
-| Rolle: Monitoring Reader | identisch (read-only); Scope nur die Function-RG |
+| Rollen: Reader + Monitoring Reader | identisch (read-only); Scope nur die Function-RG |
 
 ---
 

@@ -151,3 +151,30 @@ Function-Key holen: Function App → `render` → **Get function URL** (URL enth
   *kein* `environment:`, daher Credential auf **Branch `main`** — wird automatisch korrekt
   gesetzt. (Hätte der Workflow `environment: production`, müsste das Credential auf
   *Environment = production* stehen, sonst erneut Auth-Fehler.)
+
+---
+
+## Referenz — verifizierte Test-Umgebung (Stand 2026-06-25)
+
+Auf einem privaten Azure-Konto („Azure for Students") komplett durchgespielt und mit der
+CLI gegengeprüft:
+
+| Element | Wert |
+|---|---|
+| Resource Group | `rg-mondi-doc` (Sweden Central) |
+| Function App | `mondi-doc` — Host `mondi-doc-fcg0eae5g2fycsd4.swedencentral-01.azurewebsites.net` |
+| Deployte Functions | `render`, `renderPdf` |
+| Application Insights | `mondi-test` (workspace-based, in `rg-mondi-doc`) |
+| App Settings | `APPLICATIONINSIGHTS_CONNECTION_STRING`, `AzureWebJobsStorage`, `DEPLOYMENT_STORAGE_CONNECTION_STRING` |
+| Managed (Kunden-)Tenant | `d03dc276-…` / Sub `e8c930db-…` |
+| Managing (unit-ix) Tenant | `0bb7071a-…` |
+
+**Verifizierte Ergebnisse:**
+- `POST /api/render` (leerer Body) → `400 BAD_REQUEST` „'template' … required" ✔
+- `POST /api/render-pdf` (unbek. Layout) → `500 RENDER_ERROR` „Registered: **(none)**" ✔
+  (DOCX-only-Stand: PDF-Maschinerie da, keine Layouts registriert)
+- Telemetrie in `mondi-test` angekommen (requests + traces inkl. RenderError) ✔
+- **Lighthouse:** unit-ix liest cross-tenant `rg-mondi-doc` + App-Insights-Logs read-only;
+  Schreibzugriff korrekt mit `AuthorizationFailed` verweigert ✔
+
+Details zum Monitoring-Zugriff: [lighthouse-monitoring.md](lighthouse-monitoring.md).
